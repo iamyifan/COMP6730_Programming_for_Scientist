@@ -6,7 +6,7 @@ import argparse
 def determinant(m):
     a, b = m[0][0], m[0][1]
     c, d = m[1][0], m[1][1]
-    return ad - bc
+    return a * d - b * c
 
 
 def carmer(m, c):
@@ -18,9 +18,9 @@ def carmer(m, c):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-m', type=list)
-    parser.add_argument('-c', type=list)
-    args = parser.parse_args()
-    print(carmer(args.m, args.c))
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('-m', type=list)
+    # parser.add_argument('-c', type=list)
+    # args = parser.parse_args()
+    print(carmer([[1,1], [2,1]], [2,2]))
 
