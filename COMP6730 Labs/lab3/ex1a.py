@@ -19,5 +19,4 @@ def print_grade(mark):
                     print("Fail")
 
 
-
 print_grade(45)

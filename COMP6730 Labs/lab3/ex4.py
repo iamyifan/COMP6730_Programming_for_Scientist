@@ -2,7 +2,6 @@
 
 # Exercise 4: Digit Sums
 
-
 def sum_odd_digits(number):
     num_str = str(number)
     sum_odds = 0
