@@ -31,7 +31,7 @@ def number_to_string(m, n):
         if m < n:  # if m < n, set n to be n - m and add L to s
             n -= m
             s += "L"
-        else:  # if m > n, set m to be m - n and add R to s
+        else:      # if m > n, set m to be m - n and add R to s
             m -= n
             s += "R"
     return s
@@ -52,8 +52,7 @@ def string_to_number(s):
     """
 
     assert type(s) == str, "s must be a string"
-    # assert s    # check s only consists of L and R
-
+    assert set(s).issubset({'L', 'R'}), "s contains only L/R"
     # three pointers trick:
     # left, mid and right pointer initialize with 0/1, 1/1 and 1/0
     left, mid, right = (0, 1), (1, 1), (1, 0)
