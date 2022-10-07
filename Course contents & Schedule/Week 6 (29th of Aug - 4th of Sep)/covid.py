@@ -69,10 +69,9 @@ country_data2 = [ [ country_cases[i], country_names[i] ] for i in range(len(coun
 
 country_top10 = sorted(country_data, reverse = True)[0:10]
 
-import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 
-mpl.pyplot.bar([ row[1] for row in country_top10 ], [ row[0] for row in country_top10 ])    
+plt.bar([ row[1] for row in country_top10 ], [ row[0] for row in country_top10 ])
 
-mpl.pyplot.show()
-
+plt.show()

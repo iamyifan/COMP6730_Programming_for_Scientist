@@ -46,7 +46,7 @@ def stock_trade(stock_price, capital, p):
             curr_capital += n_shares_sell * stock_price[i]      # update available capital after selling
             curr_shares -= n_shares_sell                        # update owned shares after selling
         elif stock_price[i] < last_price:        # buy stocks if price decreases
-            n_capital_buy = round(curr_capital * (1 - p))       # maximum capital used to buy
+            n_capital_buy = round(curr_capital * (1 - p), 16)   # maximum capital used to buy
             if n_capital_buy >= stock_price[i]:  # buy stocks if available capital is enough
                 n_shares_buy = n_capital_buy // stock_price[i]  # maximum shares can buy
                 curr_capital -= n_shares_buy * stock_price[i]   # update available capital after buying
@@ -66,23 +66,6 @@ def stock_trade(stock_price, capital, p):
     return profit
     
 
-def test_stock_trade():
-    ''' some typical trading situations but by no means exhaustive
-    '''
-    assert math.isclose( stock_trade([1,1,1,1,1], 100, 0.5), 0.0 ) 
-    assert math.isclose( stock_trade([100, 50, 50], 10, 0.01), 0.0 ) 
-    assert math.isclose( stock_trade([50, 100, 50], 10, 0.01), 0.0 ) 
-    assert math.isclose( stock_trade([1,2,3,4,5], 2, 0.5), 5-1 )
-    assert math.isclose( stock_trade(tuple(), 100, 0.5), 0.0 )
-    assert math.isclose( stock_trade([1, 10, 2.0, 5.0], 50, 0.5), 268.0 )
-    assert math.isclose( stock_trade([1, 10, 2.0, 2.0, 5.0, 5], 50, 0.5), 268.0 )
 
-
-def test_stock_trade_more():
-    ''' some typical trading situations but by no means exhaustive
-    '''
-    assert math.isclose( stock_trade([1, 100, 10, 10], 10, 0.9), 10-1 )
-    assert math.isclose( stock_trade([], 100, 0.5), 0.0 )
-    assert math.isclose( stock_trade(tuple(), 100, 0.5), 0.0 )
-    print('all tests passed')
-
+p = stock_trade((0.01, 0.02), 0.4, 0.5)
+print(p)

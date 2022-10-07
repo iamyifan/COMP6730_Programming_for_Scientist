@@ -1,0 +1,28 @@
+Individual report for the COMP1730/6730 project assignment S2 2022
+-------------------------------------------------------------------
+
+Question 1: Write your name and ANU ID
+
+
+
+-------------------------------------------------------------------
+
+Question 2: If you are part of a group, write the ANU IDs of ALL
+members of this group. If you are doing the assignment on your own
+(not part of a group), just write "not part of a group".
+
+
+
+-------------------------------------------------------------------
+
+Question 3: Select a piece of code in your assignment solution that
+you have written, and explain:    
+
+(a) What does this piece of code do?
+
+(b) How does it work?
+
+(c) What other possible ways did you consider to implement this
+functionality, and why did you choose the one you did?
+
+-------------------------------------------------------------------
