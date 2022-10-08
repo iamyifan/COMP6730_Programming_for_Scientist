@@ -8,7 +8,6 @@ u7015074, Tanya Babbar
 u7309356, Sam Eckton
 u7351505, Yifan Luo
 """
-import platform
 
 
 def task1():
@@ -132,7 +131,7 @@ def task2():
         return importable_package_names
 
     global stdlibs                          # all external StdLib package names
-    importable_stdlibs = get_real(1)  # importable packages from stdlibs
+    importable_stdlibs = get_real(stdlibs)  # importable packages from stdlibs
     # subtract importable modules and get a set of unimportable modules
     unimportable_stdlibs = stdlibs.difference(importable_stdlibs)
     os_name = platform.platform()       # get OS name
