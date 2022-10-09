@@ -62,15 +62,15 @@ def task1():
 
         # remove internal packages, and substitute them with None
         stdlibs = set(map(lambda stdlib: None if stdlib[0] == '_' else stdlib, stdlibs))
-        stdlibs.discard(None)  # remove None from the last step
-        stdlibs.discard("this")  # remove "this"
+        stdlibs.discard(None)           # remove None from the last step
+        stdlibs.discard("this")         # remove "this"
         stdlibs.discard("antigravity")  # remove "antigravity"
 
         return stdlibs
 
     stdlibs = sorted(list(get_stdlib_packages()))  # get sorted StdLib list
-    os_name = platform.platform()  # get OS name
-    py_ver = platform.python_version()  # get Python version
+    os_name = platform.platform()                  # get OS name
+    py_ver = platform.python_version()             # get Python version
 
     print("Python {py_ver} on {os_name}".format(py_ver=py_ver, os_name=os_name))
     print("StdLib contains {} external modules and packages:".format(len(stdlibs)))
@@ -91,7 +91,9 @@ def task2():
         No returns.
 
     Assumptions:
-        No assumptions.
+        Task 1 correctly creates a global variable named stdlibs, which
+        contains external package names of StdLib, except two packages
+        "this" and "antigravity".
     """
     import platform
 
@@ -134,8 +136,8 @@ def task2():
     importable_stdlibs = get_real(stdlibs)  # importable packages from stdlibs
     # subtract importable modules and get a set of unimportable modules
     unimportable_stdlibs = stdlibs.difference(importable_stdlibs)
-    os_name = platform.platform()       # get OS name
-    py_ver = platform.python_version()  # get Python version
+    os_name = platform.platform()           # get OS name
+    py_ver = platform.python_version()      # get Python version
 
     print("These StdLib packages on Python-{py_ver}/{os_name} are not importable:".format(py_ver=py_ver, os_name=os_name))
     print(", ".join(sorted(list(unimportable_stdlibs))))
