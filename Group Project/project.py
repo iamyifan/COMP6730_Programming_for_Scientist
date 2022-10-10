@@ -124,7 +124,7 @@ def task2():
                 importable_package_names.append(package_name)
                 # keep the module importlib, and delete others from the program namespace
                 if package_name != "importlib":
-                    exec("del package_name")
+                    del package_name
             except:
                 # if any error happens during importing the module
                 # skip this unimportable module
@@ -132,8 +132,9 @@ def task2():
 
         return importable_package_names
 
-    global stdlibs                          # all external StdLib package names
-    importable_stdlibs = get_real(stdlibs)  # importable packages from stdlibs
+    global stdlibs                               # all external StdLib package names
+    global importable_stdlibs                    # all importable StdLib package names in stdlibs
+    importable_stdlibs = set(get_real(stdlibs))  # importable packages from stdlibs
     # subtract importable modules and get a set of unimportable modules
     unimportable_stdlibs = stdlibs.difference(importable_stdlibs)
     os_name = platform.platform()           # get OS name
@@ -144,9 +145,56 @@ def task2():
     print("\n")
 
 
+def task3():
+
+    def module_dependency(module_name, name):
+        import importlib
+        global importable_stdlibs
+
+        mod = importlib.import_module(name)
+        mod_resource = set(vars(mod).keys())
+        mod_dependent = mod_resource & importable_stdlibs
+        mod_dependent.discard(name)  # exclude duplicates
+
+        return list(mod_dependent)
+
+    def most_dependent_modules(n=5, descending=True):
+        nonlocal stdlibs_dependency
+        sorted_stdlibs = sorted(stdlibs_dependency.items(), key=lambda item: item[1], reverse=descending)
+        for i in range(n):
+            print("{}: {}".format(sorted_stdlibs[i][0], sorted_stdlibs[i][1]))
+
+    def core_modules():
+        nonlocal stdlibs_dependency
+
+        core_stdlibs = set([k for k, v in stdlibs_dependency.items() if v == 0])
+        return core_stdlibs
+
+
+    global importable_stdlibs
+    # use dictionary to store dependency
+    # key: package name, value: count of its dependency, initialized with 0
+    stdlibs_dependency = dict.fromkeys(importable_stdlibs, 0)
+
+    # count each importable external module's dependency
+    for importable_stdlib in importable_stdlibs:
+        mod_dependent = module_dependency(importable_stdlibs, importable_stdlib)
+        stdlibs_dependency[importable_stdlib] = len(mod_dependent)
+
+    # print package names and their count of dependency
+    print("The following StdLib packages are most dependent:")
+    most_dependent_modules()
+    # print ten sorted core packages
+    core_stdlibs = sorted(list(core_modules()))
+
+    print("The {} core packages are:".format(len(core_stdlibs)))
+    print(", ".join(core_stdlibs[:5]) + " ... " + ", ".join(core_stdlibs[-5:]))
+
+
 def analyse_stdlib():
     task1()
     task2()
+    task3()
 
 
 # The section below will be executed when you run this file.
@@ -157,5 +205,6 @@ if __name__ == '__main__':
     NAME = 'Yifan Luo'
     ID = 'u7351505'
     print(f'My name is {NAME}, my id is {ID}, and these are my findings for Project COMP6730.2022.S2')
-    stdlibs = set()  # a global variable containing external package names
+    stdlibs = set()             # a global variable containing external package names
+    importable_stdlibs = set()  # a global variable containing importable package names in stdlibs
     analyse_stdlib()
