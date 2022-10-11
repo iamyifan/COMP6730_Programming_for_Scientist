@@ -12,9 +12,11 @@ u7351505, Yifan Luo
 
 def task1():
     """
-    The function calls the function get_stdlib_packages and uses its
-    results (a set of StdLib package names) to print the Python version,
-    the OS name, and the first five and the last five StdLib package names.
+    The function calls a function named "get_stdlib_packages" and uses its
+    results (a set of package names in StdLib) to print the Python version,
+    the OS name, and the first five and the last five package names. At the
+    end, all the external package names except "this" and "antigravity" are
+    stored in the global variable "stdlibs".
 
     Parameters:
         No parameters.
@@ -23,7 +25,8 @@ def task1():
         No returns.
 
     Assumptions:
-        No assumptions.
+        A global variable named "stdlibs" is created to store all the
+        external package names in StdLib.
     """
     import platform
 
@@ -77,12 +80,15 @@ def task1():
     print(", ".join(stdlibs[:5]) + " ... " + ", ".join(stdlibs[-5:]))
     print("\n")
 
+
 def task2():
     """
-    The function calls the function get_real() and uses its result
+    The function calls a function named "get_real" and uses its result
     (a set of importable package names) to print the information
     (OS and Python version) about the packages which cannot be used
-    on the execution platform.
+    on the execution platform. At the end, all the importable external
+    package names in the global variable "stdlibs" are stored in a
+    global variable named "importable_stdlibs".
 
     Parameters:
         No parameters.
@@ -91,9 +97,9 @@ def task2():
         No returns.
 
     Assumptions:
-        Task 1 correctly creates a global variable named stdlibs, which
-        contains external package names of StdLib, except two packages
-        "this" and "antigravity".
+        Task 1 runs without errors and exceptions. A global variable named
+        "importable_stdlibs" is created to store all the importable external
+        package names in the global variable "stdlibs".
     """
     import platform
 
@@ -137,8 +143,8 @@ def task2():
     importable_stdlibs = set(get_real(stdlibs))  # importable packages from stdlibs
     # subtract importable modules and get a set of unimportable modules
     unimportable_stdlibs = stdlibs.difference(importable_stdlibs)
-    os_name = platform.platform()           # get OS name
-    py_ver = platform.python_version()      # get Python version
+    os_name = platform.platform()                # get OS name
+    py_ver = platform.python_version()           # get Python version
 
     print("These StdLib packages on Python-{py_ver}/{os_name} are not importable:".format(py_ver=py_ver, os_name=os_name))
     print(", ".join(sorted(list(unimportable_stdlibs))))
@@ -146,25 +152,97 @@ def task2():
 
 
 def task3():
+    """
+    The function calls a function named "module_dependency" to decide the
+    dependency of each module and store its dependent modules in the global
+    variable "importable_stdlibs". Then, a function named "core_modules"
+    stores all the package names which are independent with others in
+    "importable_stdlibs". Besides, a functions named "most_dependent_modules"
+    is used to find the most dependent modules according to the results from
+    "module_dependency". Finally, task 3 shows information about the most
+    dependent modules and the number of core modules based on the functions
+    above.
+
+    Parameters:
+        No parameters.
+
+    Returns:
+        No returns.
+
+    Assumptions:
+        Task 1 and task 2 run without errors and exceptions. Global variables
+        "stdlibs" and "importable_stdlibs" are created to store all the package
+        names of external modules and all the package names of importable external
+        modules.
+    """
 
     def module_dependency(module_name, name):
+        """
+        The function takes a module denoted as "name", and returns names of its
+        dependent modules among a set of module names denoted as "module_name".
+
+        Parameters:
+            module_name (set): A set of module names.
+            name (str): A module name.
+
+        Returns:
+            dependent_mods (list): A list of dependent module names of "name" among
+                "module_name".
+
+        Assumptions:
+            The input variables "module_name" and "name" are valid package names derived
+                from task 1 and task 2.
+        """
         import importlib
         global importable_stdlibs
 
         mod = importlib.import_module(name)
-        mod_resource = set(vars(mod).keys())
-        mod_dependent = mod_resource & importable_stdlibs
-        mod_dependent.discard(name)  # exclude duplicates
+        resource = set(vars(mod).keys())                # get resources of the module "name"
+        dependent_mods = resource & importable_stdlibs  # get dependent package names among "importable_stdlibs"
+        dependent_mods.discard(name)                    # exclude duplicates (e.g. a function with the same name)
+        dependent_mods = list(dependent_mods)
 
-        return list(mod_dependent)
+        return dependent_mods
 
     def most_dependent_modules(n=5, descending=True):
+        """
+        The function sorts module names by the number of dependent modules of
+        each module. Then, print names of the most dependent modules and the
+        number of its dependent modules.
+
+        Parameters:
+            n (int): The number of package names.
+            descending (bool): Sort package names in descending order or not.
+
+        Returns:
+            No returns.
+
+        Assumptions:
+            The main function calls "module_dependency" and the dependency information
+            of each module is stored in "stdlibs_dependency", a dictionary containing
+            each package name and its dependent package names from "importable_stdlibs".
+        """
         nonlocal stdlibs_dependency
         sorted_stdlibs = sorted(stdlibs_dependency.items(), key=lambda item: item[1], reverse=descending)
         for i in range(n):
             print("{}: {}".format(sorted_stdlibs[i][0], sorted_stdlibs[i][1]))
 
     def core_modules():
+        """
+        The function uses results from "module_dependency" and returns a set of core
+        package names, which are independent modules among "importable_stdlibs".
+
+        Parameters:
+            No parameters.
+
+        Returns:
+            core_stdlibs (set): A set of core package names among "importable_stdlibs".
+
+        Assumptions:
+            The main function calls "module_dependency" and stores dependency
+            information in "stdlibs_dependency", a dictionary containing each package
+            name and its dependent package names from "importable_stdlibs".
+        """
         nonlocal stdlibs_dependency
 
         core_stdlibs = set([k for k, v in stdlibs_dependency.items() if v == 0])
@@ -172,21 +250,21 @@ def task3():
 
 
     global importable_stdlibs
-    # use dictionary to store dependency
-    # key: package name, value: count of its dependency, initialized with 0
+
+    # initialize a dictionary to store dependency information
+    # key: package name, value: number of its dependent modules, initialized with 0
     stdlibs_dependency = dict.fromkeys(importable_stdlibs, 0)
 
-    # count each importable external module's dependency
+    # get dependency information of each importable external module
     for importable_stdlib in importable_stdlibs:
-        mod_dependent = module_dependency(importable_stdlibs, importable_stdlib)
-        stdlibs_dependency[importable_stdlib] = len(mod_dependent)
+        dependent_stdlib = module_dependency(importable_stdlibs, importable_stdlib)
+        stdlibs_dependency[importable_stdlib] = len(dependent_stdlib)
 
-    # print package names and their count of dependency
+    # print most dependent package names and the number of their dependent modules
     print("The following StdLib packages are most dependent:")
-    most_dependent_modules()
-    # print ten sorted core packages
-    core_stdlibs = sorted(list(core_modules()))
-
+    most_dependent_modules(n=5, descending=True)  # top "n" modules sorted in descending order
+    # print total number of core packages and core package examples
+    core_stdlibs = sorted(list(core_modules()))   # sort core modules by names
     print("The {} core packages are:".format(len(core_stdlibs)))
     print(", ".join(core_stdlibs[:5]) + " ... " + ", ".join(core_stdlibs[-5:]))
 
