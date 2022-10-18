@@ -2,7 +2,6 @@
 Template for the COMP1730/6730 project assignment, S2 2022.
 The assignment specification is available on the course web
 site, at https://cs.anu.edu.au/courses/comp1730/assessment/project/
-
 Collaborators:
 u7015074, Tanya Babbar
 u7309356, Sam Eckton
@@ -143,6 +142,8 @@ def get_real(package_names):
         return importable_package_names
 
 
+
+
 def task3():
     """
     The function calls a function named "module_dependency" to decide the
@@ -185,10 +186,11 @@ def task3():
     core_stdlibs = sorted(list(core_modules(stdlibs_dependency)))   # sort core modules by names
     print("The {} core packages are:".format(len(core_stdlibs)))
     print(", ".join(core_stdlibs[:5]) + " ... " + ", ".join(core_stdlibs[-5:]))
+    print("")
 
 
 
-def module_dependency(module_name, name):
+def module_dependency(module_names, name):
         """
         The function takes a module denoted as "name", and returns names of its
         dependent modules among a set of module names denoted as "module_name".
@@ -199,7 +201,7 @@ def module_dependency(module_name, name):
             dependent_mods (list): A list of dependent module names of "name" among
                 "module_name".
         Assumptions:
-            The input variables "module_name" and "name" are valid package names derived
+            The input variables "module_names" and "name" are valid package names derived
                 from task 1 and task 2.
         """
         import importlib
@@ -207,7 +209,7 @@ def module_dependency(module_name, name):
 
         mod = importlib.import_module(name)
         resource = set(vars(mod).keys())                # get resources of the module "name"
-        dependent_mods = resource & module_name  # get dependent package names among "importable_stdlibs"
+        dependent_mods = resource & module_names        # get dependent package names among "importable_stdlibs"
         dependent_mods.discard(name)                    # exclude duplicates (e.g. a function with the same name)
         dependent_mods = list(dependent_mods)
 
@@ -278,29 +280,38 @@ def task4():
     
     lines_dic = {}
     class_dic = {}
+    non_python = []
     null_classes = []
     null_lines   = []
     stdlibs = set(get_stdlib_packages())
     importable_stdlibs = set(get_real(stdlibs))
     for stdlib in importable_stdlibs:
-        (lines_count, class_count) = explore_package(stdlib)
-        if class_count == 0 and lines_count == 0: 
-            null_classes += [stdlib]
-            null_lines   += [stdlib]
-            
-            
-        elif class_count == 0:
-            null_classes += [stdlib]
-            lines_dic[stdlib] = lines_count
-            
-            
+        if explore_package(stdlib) == None:
+            non_python += [stdlib]
         else:
-            lines_dic[stdlib] = lines_count
-            class_dic[stdlib] = class_count
+            (lines_count, class_count) = explore_package(stdlib)
+            
+         
+            if class_count == 0 and lines_count == 0: 
+                null_classes += [stdlib]
+                null_lines   += [stdlib]
+            
+            
+            elif class_count == 0:
+                null_classes += [stdlib]
+                lines_dic[stdlib] = lines_count
+            
+            
+            else:
+                lines_dic[stdlib] = lines_count
+                class_dic[stdlib] = class_count
         
     
     lines_dic = [x[0] for x in sorted(lines_dic.items(), key = lambda kv : kv[1], reverse = True)]
     class_dic = [x[0] for x in sorted(class_dic.items(), key = lambda kv : kv[1], reverse = True)]
+    
+    print(len(null_classes))
+    print((null_lines))
     
     #class_dic = [x[0] for x in class_dic]
     #lines_dic = [x[0] for x in lines_dic]
@@ -357,14 +368,45 @@ def explore_package(a_package):
         py_files = glob.glob(path[0] + "/**/*.py", recursive = True)
         
         if len(py_files) == 0:
-            return (0,0)
+            return None
         
         for file in set(py_files):
-            data = open(file,"r")
-            data_test = [line for line in data if line [:5] == 'class']
+            data = open(file,"r", encoding="utf8")
+            #print('here1')
+            #print(file)
+            
+            
+            
+            data_test = [line for line in data]
+            #print('here2')
             data.seek(0)
+            #print('here3')
             lineslen += len(data.readlines())
-            class_count += len(data_test)
+            
+            
+            doc_string = False
+               
+                
+            for line in data_test:
+                    
+                if line[:3] or line[-3:]== '"""':
+                    if not doc_string:
+                        doc_string = True
+                    else:
+                        doc_string = False
+                        
+                   
+                    
+                line.strip()
+                #line.lower()
+                words = line.split()
+                    # print(words)
+                if len(words) > 0 and words[0] == 'class' and not doc_string:
+                    class_count += 1
+            
+            
+            
+            #class_count += len(data_test)
             data.close()
             
             
@@ -373,47 +415,139 @@ def explore_package(a_package):
     
     
     except: 
-        #print("arrived here") to check if the code is correctly identify a single python file
+        #print("arrived here") #to check if the code is correctly identify a single python file
         try: 
             file = mod.__file__
         
             if file[-3:] == '.py':
                 data = open(file,"r")
-                data_test = [line for line in data if line[:5] == 'class']
+                data_test = [line for line in data]
                 data.seek(0)
                 
+                
+                
                 lineslen =  len(data.readlines())
-                class_count = len(data_test)
+                #class_count = len(data_test)
                 
                 # #print(len(data_test))
                 
                 # class_count = 0
+                doc_string = False
                
                 
-                # for line in data_test:
+                for line in data_test:
                     
-                #     line.strip()
-                #     line.lower()
-                #     words = line.split()
-                #     print(words)
-                #     for word in words:
-                #         if word == 'class':
-                #             class_count += 1
+                    
+                    if line[:3] or line[-3:]== '"""':
+                        if not doc_string:
+                            doc_string = True
+                        else:
+                            doc_string = False
+                        
+                   
+                    
+                    line.strip()
+                    #line.lower()
+                    words = line.split()
+                    # print(words)
+                    if len(words) > 0 and words[0] == 'class' and not doc_string:
+                         class_count += 1
                     
                 
                 
                 data.close()
-            
         
+    
                 return (lineslen,class_count)
             
             else:
-                return (0,0)
+                return None
    
         except: 
-            return (0,0)   
+            return None
     
     
+    
+    
+
+
+
+def task5():
+    import importlib
+    
+    stdlibs = set(get_stdlib_packages())
+    importable_stdlibs = set(get_real(stdlibs))
+    
+    cycles = find_cycles(importable_stdlibs)
+    
+    for cycle in cycles:
+            print(" -> ".join(cycle))
+    
+    
+    
+def find_cycles(importable_stdlibs):
+    
+    import importlib
+
+    
+    cycles = []
+    
+
+    
+    
+    
+    
+    for stdlib in  importable_stdlibs:
+        current_cycle = []
+        mod = importlib.import_module(stdlib)
+        resource = set(vars(mod).keys())                  # get resources of the module "name"
+        dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
+        dependent_mods.discard(stdlib)                    # exclude duplicates (e.g. a function with the same name)
+        dependent_mods = list(dependent_mods)
+        
+        if dependent_mods != 0:
+            current_cycle += [stdlib]
+
+        
+        while len(dependent_mods) != 0:
+            name = dependent_mods[0]
+            mod = importlib.import_module(name)
+            current_cycle += [dependent_mods[0]]
+            resource = set(vars(mod).keys())                  # get resources of the module "name"
+            dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
+            dependent_mods.discard(name)                      # exclude duplicates (e.g. a function with the same name)
+            dependent_mods = list(dependent_mods)
+            
+            
+        if len(current_cycle) > 1:
+            cycles.append(current_cycle)
+        
+    
+    
+    
+    
+    #print(cycles)
+    cycles_sorted = check_cycles(cycles)
+    return cycles_sorted
+        
+    
+
+def check_cycles(cycles):
+    
+
+    for cycle in cycles:
+         cycle.sort()
+
+    for cycle in cycles:
+        count = 0
+        for i in range (len(cycles)): 
+            if cycles[i] == cycle and count > 0:
+                cycles.remove(cycle)
+            elif cycles[i] == cycle:
+                count += 1
+
+    
+    return cycles
     
     
     
@@ -422,6 +556,7 @@ def analyse_stdlib():
     task2()
     task3()
     task4()
+    task5()
 
 
 # The section below will be executed when you run this file.
