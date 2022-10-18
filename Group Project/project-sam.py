@@ -388,26 +388,21 @@ def explore_package(a_package):
             doc_string = False
                
                 
-            for line in data_test:
-                    
-                if line[:3] or line[-3:]== '"""':
+            for line in data_test:  
+                line = line.strip()
+                                        
+                if line[:3] == '"""' or line[-3:] == '"""':                            
                     if not doc_string:
                         doc_string = True
                     else:
                         doc_string = False
-                        
-                   
-                    
-                line.strip()
-                #line.lower()
+                
                 words = line.split()
                     # print(words)
                 if len(words) > 0 and words[0] == 'class' and not doc_string:
                     class_count += 1
-            
-            
-            
-            #class_count += len(data_test)
+
+
             data.close()
             
             
@@ -434,31 +429,17 @@ def explore_package(a_package):
                 
                 # class_count = 0
                 doc_string = False
-                string = '"""'
                
                 
-                for line in data_test:
-                    
+                for line in data_test:  
                     line = line.strip()
-                    #print(line)
                                         
-                    if line[:3] == string or line[-3:] == string:
-                        #print(line) # or line[-3:] == string:
-                            
+                    if line[:3] == '"""' or line[-3:] == '"""':                            
                         if not doc_string:
                             doc_string = True
                         else:
                             doc_string = False
-                    
-                    # if (line[:3] == string or line[-3:] == string) and not doc_string:
-                    #     doc_string = True
-                    # if (line[:3] == string or line[-3:] == string) and doc_string:
-                    #     doc_string = False
-                        
-                   
-                    
-                    #line.strip()
-                    #line.lower()
+                
                     words = line.split()
                     # print(words)
                     if len(words) > 0 and words[0] == 'class' and not doc_string:
@@ -485,7 +466,6 @@ def explore_package(a_package):
 
 
 def task5():
-    import importlib
     
     stdlibs = set(get_stdlib_packages())
     importable_stdlibs = set(get_real(stdlibs))
@@ -499,17 +479,17 @@ def task5():
     
     
     
+    
+    
+    
+    
 def find_cycles(importable_stdlibs):
     
     import importlib
 
     
     cycles = []
-    
 
-    
-    
-    
     
     for stdlib in  importable_stdlibs:
         current_cycle = []
