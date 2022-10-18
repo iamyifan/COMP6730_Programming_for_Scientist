@@ -310,11 +310,12 @@ def task4():
     lines_dic = [x[0] for x in sorted(lines_dic.items(), key = lambda kv : kv[1], reverse = True)]
     class_dic = [x[0] for x in sorted(class_dic.items(), key = lambda kv : kv[1], reverse = True)]
     
-    print(len(null_classes))
-    print((null_lines))
+    #print(len(null_classes))
+    #print((null_lines))
     
     #class_dic = [x[0] for x in class_dic]
     #lines_dic = [x[0] for x in lines_dic]
+    null_classes.sort()
     
         
     print("The following StdLib packages are the largest in terms of lines of code:")
@@ -420,7 +421,7 @@ def explore_package(a_package):
             file = mod.__file__
         
             if file[-3:] == '.py':
-                data = open(file,"r")
+                data = open(file,"r", encoding="utf8")
                 data_test = [line for line in data]
                 data.seek(0)
                 
@@ -433,24 +434,35 @@ def explore_package(a_package):
                 
                 # class_count = 0
                 doc_string = False
+                string = '"""'
                
                 
                 for line in data_test:
                     
-                    
-                    if line[:3] or line[-3:]== '"""':
+                    line = line.strip()
+                    #print(line)
+                                        
+                    if line[:3] == string or line[-3:] == string:
+                        #print(line) # or line[-3:] == string:
+                            
                         if not doc_string:
                             doc_string = True
                         else:
                             doc_string = False
+                    
+                    # if (line[:3] == string or line[-3:] == string) and not doc_string:
+                    #     doc_string = True
+                    # if (line[:3] == string or line[-3:] == string) and doc_string:
+                    #     doc_string = False
                         
                    
                     
-                    line.strip()
+                    #line.strip()
                     #line.lower()
                     words = line.split()
                     # print(words)
                     if len(words) > 0 and words[0] == 'class' and not doc_string:
+                         #print(line)
                          class_count += 1
                     
                 
@@ -479,9 +491,11 @@ def task5():
     importable_stdlibs = set(get_real(stdlibs))
     
     cycles = find_cycles(importable_stdlibs)
-    
+    count = 0
+    print("The StdLib packages form a cycle of dependency:")
     for cycle in cycles:
-            print(" -> ".join(cycle))
+            count += 1
+            print("{}: ".format(count) + "-> ".join(cycle))
     
     
     
