@@ -466,6 +466,15 @@ def explore_package(a_package):
 
 
 def task5():
+    """
+    Prints all cyclical depndecies for packages in importable_stdlibs using 
+    arros to show dependencies in a numbered output
+
+    Returns
+    -------
+    None.
+
+    """
     
     stdlibs = set(get_stdlib_packages())
     importable_stdlibs = set(get_real(stdlibs))
@@ -480,68 +489,171 @@ def task5():
     
     
     
-    
-    
-    
+# incomplete still testing find_acycle
 def find_cycles(importable_stdlibs):
-    
+    """
+    A function called by task 5 to find all cyclical depdencies for packages 
+    in importable_stdlibs using recurive_help()
+
+    Parameters
+    ----------
+    importable_stdlibs : list
+        A list of all importable_stdlibs.
+
+    Returns
+    -------
+    cycles : list of lists
+        the list of all cyclical dependencies in importable_stdlibs.
+
+    """
     import importlib
+    cycles = []             # initiate the list of dependencies 
 
-    
-    cycles = []
-
-    
-    for stdlib in  importable_stdlibs:
-        current_cycle = []
+    for stdlib in importable_stdlibs:
+        std_cycles = []
         mod = importlib.import_module(stdlib)
         resource = set(vars(mod).keys())                  # get resources of the module "name"
         dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
         dependent_mods.discard(stdlib)                    # exclude duplicates (e.g. a function with the same name)
         dependent_mods = list(dependent_mods)
         
-        if dependent_mods != 0:
-            current_cycle += [stdlib]
-
+        for elem in dependent_mods:             # recursive for every dependecy of the stdlib
+            current_cycles = []                 # initiate the list of cycles fo the stdlib
+            current_cycle = [stdlib, elem]      # Add the current elem - dependency of stdlib and stdlib to the current cycle
+            # call the recursive function
+            current_cycles = recursive_help(importable_stdlibs, stdlib, elem, 
+                                        current_cycle, current_cycles)
+            # add the current cycles to the stdlibs cycles
+            std_cycles += current_cycles
         
-        while len(dependent_mods) != 0:
-            name = dependent_mods[0]
-            mod = importlib.import_module(name)
-            current_cycle += [dependent_mods[0]]
-            resource = set(vars(mod).keys())                  # get resources of the module "name"
-            dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
-            dependent_mods.discard(name)                      # exclude duplicates (e.g. a function with the same name)
-            dependent_mods = list(dependent_mods)
-            
-            
-        if len(current_cycle) > 1:
-            cycles.append(current_cycle)
         
-    
-    
-    
-    
-    #print(cycles)
-    cycles_sorted = check_cycles(cycles)
-    return cycles_sorted
-        
-    
+        # add the stdlib cycles to the list of overall cycles
+        cycles += std_cycles
 
-def check_cycles(cycles):
-    
-
-    for cycle in cycles:
-         cycle.sort()
-
-    for cycle in cycles:
-        count = 0
-        for i in range (len(cycles)): 
-            if cycles[i] == cycle and count > 0:
-                cycles.remove(cycle)
-            elif cycles[i] == cycle:
-                count += 1
-
-    
     return cycles
+
+
+# recurisve helper function to check for all possible cycles
+def recursive_help(importable_stdlibs, stdlib, elem, 
+                   current_cycle, current_cycles):
+    """
+    
+    recursive function called by find_cycles to find all cyclical depdencies 
+    for a given stdlib by calling itself and itterating over the dependicies 
+    of the current stdlib 'elem' which is a sub dependency of the stdlib
+
+    Parameters
+    ----------
+    importable_stdlibs : list
+        A list of all importable_stdlibs.
+    stdlib : package
+        the stdlib package whos cycles are being inspected.
+    elem : package
+        the current stdlib package being inspected..
+    current_cycle : list
+        The current cycle we are forming.
+    current_cycles : list of lists
+        the list of current cycles for the given stdlib.
+
+    Returns
+    -------
+    current_cycles : list of lists
+        the list of current cycles for the given stdlib..
+
+    """
+    import importlib
+    
+    mod = importlib.import_module(elem)
+    resource = set(vars(mod).keys())                  # get resources of the module "name"
+    dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
+    dependent_mods.discard(elem)                      # exclude duplicates (e.g. a function with the same name)
+    dependent_mods = list(dependent_mods)
+    
+    # to stop recursion depth errors
+    if len(current_cycle) > 20:
+        return;
+    
+    # itterate over every dependent module for the current stdlib - elem
+    for obj in dependent_mods:
+        if obj == stdlib:
+            # if the depedent module is the stdlib we are searching for cycles of then add this 
+            # cycle to the list of all current cycles for the stdlib
+            current_cycles += [current_cycle + [obj]]
+
+        else:
+            # if the dependent module is not the stdlib we are searching for cycle of
+            # continue recursive calls to check if a subdependecy is the stdlib we are searching for
+            if current_cycle.count(obj) == 0:       #check if obj is already in the current cycle
+                recursive_help(importable_stdlibs, stdlib, obj, 
+                               current_cycle + [obj], current_cycles)
+            
+    return current_cycles
+
+
+# used for testing to find the cycles fro one stdlib
+# def find_acycle(stdlib):
+#     std_cycles = []
+#     import importlib
+#     stdlibs = set(get_stdlib_packages())
+#     importable_stdlibs = set(get_real(stdlibs))
+    
+#     mod = importlib.import_module(stdlib)
+#     resource = set(vars(mod).keys())                  # get resources of the module "name"
+#     dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
+#     dependent_mods.discard(stdlib)                    # exclude duplicates (e.g. a function with the same name)
+#     dependent_mods = list(dependent_mods)
+        
+#     for elem in dependent_mods:
+#         current_cycles = []
+#         current_cycle = [stdlib, elem]
+#         current_cycles = recursive_help(importable_stdlibs, stdlib, elem, 
+#                                         current_cycle, current_cycles)
+#         std_cycles += current_cycles
+            
+#     return (std_cycles)
+    
+
+# used for testing 
+# def get_dep_mods(stdlib):
+#     import importlib
+#     stdlibs = set(get_stdlib_packages())
+#     importable_stdlibs = set(get_real(stdlibs))
+    
+#     mod = importlib.import_module(stdlib)
+#     resource = set(vars(mod).keys())                  # get resources of the module "name"
+#     dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
+#     dependent_mods.discard(stdlib)                    # exclude duplicates (e.g. a function with the same name)
+#     dependent_mods = list(dependent_mods)
+    
+#     return dependent_mods
+    
+
+
+
+# used to check there are no repeated cycles in our output for task5()
+# doesnt really work and isnt actually needed i dont think as all cycles are 
+# cylical and therefore cannot be the same
+
+
+
+# def check_cycles(cycles_to_be_ordered):
+#     import copy
+#     cycles = copy.deepcopy(cycles_to_be_ordered)
+#     for cycle in cycles:
+#          cycle.sort()
+
+#     for cycle in cycles:
+#         count = 0
+#         for i in range (len(cycles)): 
+#             if cycles[i] == cycle and count > 0:
+#                 cycles_to_be_ordered.remove[i]
+#             elif cycles[i] == cycle:
+#                 count += 1
+
+#     return cycles_to_be_ordered
+    
+    
+    
     
     
     
