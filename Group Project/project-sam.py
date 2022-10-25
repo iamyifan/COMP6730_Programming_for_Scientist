@@ -278,46 +278,34 @@ def task4():
      """
     
     
-    lines_dic = {}
-    class_dic = {}
-    non_python = []
-    null_classes = []
-    null_lines   = []
-    stdlibs = set(get_stdlib_packages())
-    importable_stdlibs = set(get_real(stdlibs))
-    for stdlib in importable_stdlibs:
-        if explore_package(stdlib) == None:
-            non_python += [stdlib]
+    lines_dic = {}              # initiate the dictionary for each stdlib and the number of lines of code
+    class_dic = {}              # initiate the dictionary for each stdlib and the number of class instances
+    non_python = []             # initiate the list of non python code modules
+    null_classes = []           # initate the list of modules with no class instances
+    stdlibs = set(get_stdlib_packages())            # find the set of all stdlibs 
+    importable_stdlibs = set(get_real(stdlibs))     # find the set of all importable stdlibs using stdlibs
+    for stdlib in importable_stdlibs:               # test each importable stdlib
+        if explore_package(stdlib) == None:         # if the helper function try cases have failed, this is a non python code module
+            non_python += [stdlib]             
         else:
-            (lines_count, class_count) = explore_package(stdlib)
+            (lines_count, class_count) = explore_package(stdlib)    # assignt the tuple returned from the hlper function to lines and class counters
             
-         
-            if class_count == 0 and lines_count == 0: 
-                null_classes += [stdlib]
-                null_lines   += [stdlib]
-            
-            
-            elif class_count == 0:
-                null_classes += [stdlib]
-                lines_dic[stdlib] = lines_count
+                        
+            if class_count == 0:                                    # check if the module had no class instances
+                null_classes += [stdlib]                            # add the module to the null_classes list
+                lines_dic[stdlib] = lines_count                     # add the module to the dictionary with its associated number of lines
             
             
             else:
-                lines_dic[stdlib] = lines_count
-                class_dic[stdlib] = class_count
+                lines_dic[stdlib] = lines_count                     # add the module to the dictionary with its number of lines
+                class_dic[stdlib] = class_count                     # add the module to the dictionary with its number of class instances
         
     
+    # sort the lines and class dictionaries from highest to lowest and remove the keys:
     lines_dic = [x[0] for x in sorted(lines_dic.items(), key = lambda kv : kv[1], reverse = True)]
     class_dic = [x[0] for x in sorted(class_dic.items(), key = lambda kv : kv[1], reverse = True)]
-    
-    #print(len(null_classes))
-    #print((null_lines))
-    
-    #class_dic = [x[0] for x in class_dic]
-    #lines_dic = [x[0] for x in lines_dic]
-    null_classes.sort()
-    
-        
+    null_classes.sort()    
+
     print("The following StdLib packages are the largest in terms of lines of code:")
     print(", ".join(lines_dic[:5]))
     print("\n")
@@ -359,100 +347,90 @@ def explore_package(a_package):
     
     import importlib
     import glob
-    mod = importlib.import_module(a_package)    
-    lineslen = 0
-    class_count = 0
+    mod = importlib.import_module(a_package)            # import the current stdlib
+    lineslen = 0                                        # initalise the lines count to 0
+    class_count = 0                                     # initialise the class count to 0
     
-    
-    try:
-        path = mod.__path__
-        py_files = glob.glob(path[0] + "/**/*.py", recursive = True)
         
-        if len(py_files) == 0:
+    try:                                                # try case to test for python code module (folder case)
+        path = mod.__path__                             # use __path__ module to check for the location of the python folder for the module
+        py_files = glob.glob(path[0] + "/**/*.py", recursive = True)    # return the list of all python files within the modules folder
+        
+        if len(py_files) == 0:                          # if there are no python files, the module is not python coded
             return None
         
-        for file in set(py_files):
+        for file in set(py_files):                      # open each python file in the modules folder
             data = open(file,"r", encoding="utf8")
-            #print('here1')
-            #print(file)
+
+            data_test = [line for line in data]         # create a list for each line in the file
+            data.seek(0)                                # return to the start of the file
+            lineslen += len(data.readlines())           # count the number of lines in the file
+                    
             
-            
-            
-            data_test = [line for line in data]
-            #print('here2')
-            data.seek(0)
-            #print('here3')
-            lineslen += len(data.readlines())
-            
-            
-            doc_string = False
+            doc_string = False                          # initialise the docString tester to false
                
-                
-            for line in data_test:  
+            for line in data_test:                      # test for each line in data_test
                 line = line.strip()
                                         
-                if line[:3] == '"""' or line[-3:] == '"""':                            
+                # if the line starts or ends with a doctring symbol, assign the tester to true or false depending on what it currently is
+                if line[:3] == '"""' or line[-3:] == '"""':                      
                     if not doc_string:
                         doc_string = True
                     else:
                         doc_string = False
                 
-                words = line.split()
-                    # print(words)
+                words = line.split()            # split each line into a list of words/elements
+
+                # test if the element is class instances using several conditon testers
                 if len(words) > 0 and words[0] == 'class' and not doc_string:
                     class_count += 1
-
-
-            data.close()
-            
+                    
+            data.close()                     
             
         return (lineslen,class_count)
     
     
     
-    except: 
-        #print("arrived here") #to check if the code is correctly identify a single python file
-        try: 
-            file = mod.__file__
+    except:                                     # if the current module is not a python folder try the file case:
         
-            if file[-3:] == '.py':
-                data = open(file,"r", encoding="utf8")
-                data_test = [line for line in data]
-                data.seek(0)
+        
+        try:                                    # try statement to check if the current module is python coded (single file case)
+            file = mod.__file__                 # use the __file__ method to check for the location of the python file
+        
+            if file[-3:] == '.py':              # check the file is python coded
+                data = open(file,"r", encoding="utf8")      # open the current file
+                data_test = [line for line in data]         # create the data_test as a list of each line
+                data.seek(0)                                # return to the start of the file
                 
                 
                 
-                lineslen =  len(data.readlines())
-                #class_count = len(data_test)
-                
-                # #print(len(data_test))
-                
-                # class_count = 0
-                doc_string = False
+                lineslen =  len(data.readlines())           # count the number of lines in the python file
+
+                doc_string = False                          # assign the docString tester to flase
                
-                
-                for line in data_test:  
-                    line = line.strip()
+                for line in data_test:                      # test for each line in data_test
+                    line = line.strip()     
                                         
+                    # if the line starts or ends with a docstring symbol, assign the tester to true or false depending on what it currently is
                     if line[:3] == '"""' or line[-3:] == '"""':                            
                         if not doc_string:
                             doc_string = True
                         else:
                             doc_string = False
                 
-                    words = line.split()
-                    # print(words)
+                    words = line.split()        # split each line into a list of each word/element 
+
+                    # check if the element is a class instances base on several conditions
                     if len(words) > 0 and words[0] == 'class' and not doc_string:
                          #print(line)
                          class_count += 1
                     
-                
-                
                 data.close()
         
     
                 return (lineslen,class_count)
             
+        # excpetions if the code fails, i.e. the modul/file is not python coded - return None
             else:
                 return None
    
@@ -476,11 +454,11 @@ def task5():
 
     """
     
-    stdlibs = set(get_stdlib_packages())
-    importable_stdlibs = set(get_real(stdlibs))
+    stdlibs = set(get_stdlib_packages())               #find the list of all stdlibs 
+    importable_stdlibs = set(get_real(stdlibs))        #use stdlibs to find the set of importable stdlibs
     
-    cycles = find_cycles(importable_stdlibs)
-    count = 0
+    cycles = find_cycles(importable_stdlibs)           #call the helper function find_cycles on the set of importable stdlibs
+    count = 0                                          #initiate the counter for outpur listing
     print("The StdLib packages form a cycle of dependency:")
     for cycle in cycles:
             count += 1
@@ -489,7 +467,7 @@ def task5():
     
     
     
-# incomplete still testing find_acycle
+
 def find_cycles(importable_stdlibs):
     """
     A function called by task 5 to find all cyclical depdencies for packages 
@@ -507,40 +485,40 @@ def find_cycles(importable_stdlibs):
 
     """
     import importlib
-    cycles = []             # initiate the list of dependencies 
+    cycles = []             # initiate the list of cycles to empty  
 
     for stdlib in importable_stdlibs:
-        std_cycles = []
-        mod = importlib.import_module(stdlib)
-        resource = set(vars(mod).keys())                  # get resources of the module "name"
-        dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
-        dependent_mods.discard(stdlib)                    # exclude duplicates (e.g. a function with the same name)
+        std_cycles = []                                 # initiate the list of current cycles for the stdlib
+        mod = importlib.import_module(stdlib)           # import the stdlib
+        resource = set(vars(mod).keys())                # get resources of the module "stdlib"
+        dependent_mods = resource & importable_stdlibs  # get dependent package names among "importable_stdlibs"
+        dependent_mods.discard(stdlib)                  # exclude duplicates (e.g. a function with the same name)
         dependent_mods = list(dependent_mods)
         
-        for elem in dependent_mods:             # recursive for every dependecy of the stdlib
-            current_cycles = []                 # initiate the list of cycles fo the stdlib
-            current_cycle = [stdlib, elem]      # Add the current elem - dependency of stdlib and stdlib to the current cycle
-            # call the recursive function
-            current_cycles = recursive_help(importable_stdlibs, stdlib, elem, 
+        for depend in dependent_mods:             # check every dependecy of the stdlib
+            current_cycles = []                 # initiate the list of cycles for the stdlib and current dependency
+            current_cycle = [stdlib, depend]      # Add the current depend - dependency of stdlib and stdlib to the current cycle
+            # call the recursive function:
+            current_cycles = recursive_help(importable_stdlibs, stdlib, depend, 
                                         current_cycle, current_cycles)
-            # add the current cycles to the stdlibs cycles
+            # add the current cycles to the stdlibs cycles:
             std_cycles += current_cycles
         
         
-        # add the stdlib cycles to the list of overall cycles
+        # add the stdlib cycles to the list of overall cycle:
         cycles += std_cycles
 
     return cycles
 
 
-# recurisve helper function to check for all possible cycles
-def recursive_help(importable_stdlibs, stdlib, elem, 
+
+def recursive_help(importable_stdlibs, stdlib, depend, 
                    current_cycle, current_cycles):
     """
     
     recursive function called by find_cycles to find all cyclical depdencies 
     for a given stdlib by calling itself and itterating over the dependicies 
-    of the current stdlib 'elem' which is a sub dependency of the stdlib
+    of the current stdlib 'depend' which is a sub dependency of the stdlib
 
     Parameters
     ----------
@@ -548,7 +526,7 @@ def recursive_help(importable_stdlibs, stdlib, elem,
         A list of all importable_stdlibs.
     stdlib : package
         the stdlib package whos cycles are being inspected.
-    elem : package
+    depend : package
         the current stdlib package being inspected..
     current_cycle : list
         The current cycle we are forming.
@@ -563,29 +541,29 @@ def recursive_help(importable_stdlibs, stdlib, elem,
     """
     import importlib
     
-    mod = importlib.import_module(elem)
+    mod = importlib.import_module(depend)               # import the current dependency "depend"
     resource = set(vars(mod).keys())                  # get resources of the module "name"
     dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
-    dependent_mods.discard(elem)                      # exclude duplicates (e.g. a function with the same name)
+    dependent_mods.discard(depend)                      # exclude duplicates (e.g. a function with the same name)
     dependent_mods = list(dependent_mods)
     
     # to stop recursion depth errors
     if len(current_cycle) > 20:
         return;
     
-    # itterate over every dependent module for the current stdlib - elem
-    for obj in dependent_mods:
-        if obj == stdlib:
+    # itterate over every dependent module for the current stdlib - depend
+    for depend in dependent_mods:
+        if depend == stdlib:
             # if the depedent module is the stdlib we are searching for cycles of then add this 
             # cycle to the list of all current cycles for the stdlib
-            current_cycles += [current_cycle + [obj]]
+            current_cycles += [current_cycle + [depend]]
 
         else:
             # if the dependent module is not the stdlib we are searching for cycle of
             # continue recursive calls to check if a subdependecy is the stdlib we are searching for
-            if current_cycle.count(obj) == 0:       #check if obj is already in the current cycle
-                recursive_help(importable_stdlibs, stdlib, obj, 
-                               current_cycle + [obj], current_cycles)
+            if current_cycle.count(depend) == 0:       #check if depend is already in the current cycle
+                recursive_help(importable_stdlibs, stdlib, depend, 
+                               current_cycle + [depend], current_cycles)
             
     return current_cycles
 
@@ -613,48 +591,7 @@ def recursive_help(importable_stdlibs, stdlib, elem,
 #     return (std_cycles)
     
 
-# used for testing 
-# def get_dep_mods(stdlib):
-#     import importlib
-#     stdlibs = set(get_stdlib_packages())
-#     importable_stdlibs = set(get_real(stdlibs))
-    
-#     mod = importlib.import_module(stdlib)
-#     resource = set(vars(mod).keys())                  # get resources of the module "name"
-#     dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
-#     dependent_mods.discard(stdlib)                    # exclude duplicates (e.g. a function with the same name)
-#     dependent_mods = list(dependent_mods)
-    
-#     return dependent_mods
-    
 
-
-
-# used to check there are no repeated cycles in our output for task5()
-# doesnt really work and isnt actually needed i dont think as all cycles are 
-# cylical and therefore cannot be the same
-
-
-
-# def check_cycles(cycles_to_be_ordered):
-#     import copy
-#     cycles = copy.deepcopy(cycles_to_be_ordered)
-#     for cycle in cycles:
-#          cycle.sort()
-
-#     for cycle in cycles:
-#         count = 0
-#         for i in range (len(cycles)): 
-#             if cycles[i] == cycle and count > 0:
-#                 cycles_to_be_ordered.remove[i]
-#             elif cycles[i] == cycle:
-#                 count += 1
-
-#     return cycles_to_be_ordered
-    
-    
-    
-    
     
     
 def analyse_stdlib():
