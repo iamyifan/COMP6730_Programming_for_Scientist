@@ -17,13 +17,10 @@ def task1():
     the OS name, and the first five and the last five package names. At the
     end, all the external package names except "this" and "antigravity" are
     stored in the global variable "stdlibs".
-
     Parameters:
         No parameters.
-
     Returns:
         No returns.
-
     Assumptions:
         A global variable named "stdlibs" is created to store all the
         external package names in StdLib.
@@ -65,15 +62,15 @@ def task1():
 
         # remove internal packages, and substitute them with None
         stdlibs = set(map(lambda stdlib: None if stdlib[0] == '_' else stdlib, stdlibs))
-        stdlibs.discard(None)           # remove None from the last step
-        stdlibs.discard("this")         # remove "this"
+        stdlibs.discard(None)  # remove None from the last step
+        stdlibs.discard("this")  # remove "this"
         stdlibs.discard("antigravity")  # remove "antigravity"
 
         return stdlibs
 
     stdlibs = sorted(list(get_stdlib_packages()))  # get sorted StdLib list
-    os_name = platform.platform()                  # get OS name
-    py_ver = platform.python_version()             # get Python version
+    os_name = platform.platform()  # get OS name
+    py_ver = platform.python_version()  # get Python version
 
     print("Python {py_ver} on {os_name}".format(py_ver=py_ver, os_name=os_name))
     print("StdLib contains {} external modules and packages:".format(len(stdlibs)))
@@ -89,13 +86,10 @@ def task2():
     on the execution platform. At the end, all the importable external
     package names in the global variable "stdlibs" are stored in a
     global variable named "importable_stdlibs".
-
     Parameters:
         No parameters.
-
     Returns:
         No returns.
-
     Assumptions:
         Task 1 runs without errors and exceptions. A global variable named
         "importable_stdlibs" is created to store all the importable external
@@ -108,14 +102,11 @@ def task2():
         The function iterates through a sequence of package names, and
         determine which ones are importable. The returned list is a new
         object containing importable package names.
-
         Parameters:
             package_names (set): A set of StdLib package names to be tested.
-
         Returns:
              importable_package_names (list): A list containing all the importable
                 package names from the input package_names.
-
         Assumptions:
             No assumptions.
         """
@@ -138,15 +129,16 @@ def task2():
 
         return importable_package_names
 
-    global stdlibs                               # all external StdLib package names
-    global importable_stdlibs                    # all importable StdLib package names in stdlibs
+    global stdlibs  # all external StdLib package names
+    global importable_stdlibs  # all importable StdLib package names in stdlibs
     importable_stdlibs = set(get_real(stdlibs))  # importable packages from stdlibs
     # subtract importable modules and get a set of unimportable modules
     unimportable_stdlibs = stdlibs.difference(importable_stdlibs)
-    os_name = platform.platform()                # get OS name
-    py_ver = platform.python_version()           # get Python version
+    os_name = platform.platform()  # get OS name
+    py_ver = platform.python_version()  # get Python version
 
-    print("These StdLib packages on Python-{py_ver}/{os_name} are not importable:".format(py_ver=py_ver, os_name=os_name))
+    print(
+        "These StdLib packages on Python-{py_ver}/{os_name} are not importable:".format(py_ver=py_ver, os_name=os_name))
     print(", ".join(sorted(list(unimportable_stdlibs))))
     print("\n")
 
@@ -162,13 +154,10 @@ def task3():
     "module_dependency". Finally, task 3 shows information about the most
     dependent modules and the number of core modules based on the functions
     above.
-
     Parameters:
         No parameters.
-
     Returns:
         No returns.
-
     Assumptions:
         Task 1 and task 2 run without errors and exceptions. Global variables
         "stdlibs" and "importable_stdlibs" are created to store all the package
@@ -197,9 +186,9 @@ def task3():
         global importable_stdlibs
 
         mod = importlib.import_module(name)
-        resource = set(vars(mod).keys())                # get resources of the module "name"
+        resource = set(vars(mod).keys())  # get resources of the module "name"
         dependent_mods = resource & importable_stdlibs  # get dependent package names among "importable_stdlibs"
-        dependent_mods.discard(name)                    # exclude duplicates (e.g. a function with the same name)
+        dependent_mods.discard(name)  # exclude duplicates (e.g. a function with the same name)
         dependent_mods = list(dependent_mods)
 
         return dependent_mods
@@ -248,7 +237,6 @@ def task3():
         core_stdlibs = set([k for k, v in stdlibs_dependency.items() if v == 0])
         return core_stdlibs
 
-
     global importable_stdlibs
 
     # initialize a dictionary to store dependency information
@@ -264,7 +252,7 @@ def task3():
     print("The following StdLib packages are most dependent:")
     most_dependent_modules(n=5, descending=True)  # top "n" modules sorted in descending order
     # print total number of core packages and core package examples
-    core_stdlibs = sorted(list(core_modules()))   # sort core modules by names
+    core_stdlibs = sorted(list(core_modules()))  # sort core modules by names
     print("The {} core packages are:".format(len(core_stdlibs)))
     print(", ".join(core_stdlibs[:5]) + " ... " + ", ".join(core_stdlibs[-5:]))
 
@@ -283,6 +271,6 @@ if __name__ == '__main__':
     NAME = 'Yifan Luo'
     ID = 'u7351505'
     print(f'My name is {NAME}, my id is {ID}, and these are my findings for Project COMP6730.2022.S2')
-    stdlibs = set()             # a global variable containing external package names
+    stdlibs = set()  # a global variable containing external package names
     importable_stdlibs = set()  # a global variable containing importable package names in stdlibs
     analyse_stdlib()
