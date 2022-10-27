@@ -273,31 +273,33 @@ def task3():
 def explore_package(a_package):
     import os
     import importlib
+    import sys
     def count_lines_and_classes(pkg_path):
         loc, custom_types = 0, 0
+        mod_name = pkg_path.split('\\')[-1].split('.py')[0]
         with open(pkg_path, 'r', encoding='ISO-8859-1') as f:
             loc = len(f.readlines())
             f.seek(0)  # reset to the beginning of the file
             # skip doc
             line_idx = 0
             content = f.readlines()
-            while line_idx < len(content):
-                # skip documents that start with """
-                if content[line_idx].strip().startswith('"""') or content[line_idx].strip().startswith('r"""'):
-                    line_idx += 1
-                    while line_idx < len(content) and not content[line_idx].strip().endswith('"""'):
-                        line_idx += 1
-                if line_idx == len(content):
-                    break
-                # skip documents that start with #
-                if content[line_idx].strip().startswith('#'):
-                    while line_idx < len(content) and content[line_idx].strip().startswith('#'):
-                        line_idx += 1
-                if line_idx == len(content):
-                    break
-                if content[line_idx].strip().startswith('class'):
+            is_doc_string = False
+            for line in content:
+                line = line.strip()
+                # if the line starts and ends with docstring assign it to false
+                if line[:3] == '"""' and line[-3:] == '"""':
+                    is_doc_string = False
+                else:
+                    # if the line starts or ends with a docstring symbol, assign the tester to true or false depending on what it currently is
+                    if line[:3] == '"""' or line[-3:] == '"""' or line[:4] == 'r"""':
+                        if not is_doc_string:
+                            is_doc_string = True
+                        else:
+                            is_doc_string = False
+                words = line.split()  # split each line into a list of each word/element
+                # check if the element is a class instances base on several conditions
+                if len(words) > 0 and words[0] == 'class' and not is_doc_string:
                     custom_types += 1
-                line_idx += 1
 
         return loc, custom_types
 
@@ -321,24 +323,6 @@ def explore_package(a_package):
                 loc, custom_types = count_lines_and_classes(pkg_path)
             else:  # shared library
                 return -1, -1
-
-    # if not hasattr(pkg, '__path__') and not hasattr(pkg, '__file__'):
-    #     # builtin binary code
-    #     return
-    # elif hasattr(pkg, '__file__'):
-    #     pkg_path = os.path.abspath(pkg.__file__)
-    #     if pkg_path.endswith('.py'):  # python coded package
-    #         if pkg_path.endswith('__init__.py'):  # python dir
-    #             for dir_path, dir_names, file_names in os.walk(os.path.dirname(pkg_path)):
-    #                 for file_name in file_names:
-    #                     if file_name.endswith('.py'):  # only count python file
-    #                         file_loc, file_types = count_lines_and_classes(dir_path + '\\' + file_name)   # TODO: different OS?
-    #                         loc += file_loc
-    #                         custom_types += file_types
-    #         elif pkg_path.endswith(a_package + '.py'):  # a single python file
-    #             loc, custom_types = count_lines_and_classes(pkg_path)
-    #     else:  # shared library
-    #         return
 
     return loc, custom_types
 
@@ -425,11 +409,11 @@ def task6():
 
 
 def analyse_stdlib():
-    task1()
-    task2()
-    task3()
+    # task1()
+    # task2()
+    # task3()
     task4()
-    task5()
+    # task5()
     # task6()
 
 
