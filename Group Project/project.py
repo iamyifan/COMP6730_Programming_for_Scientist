@@ -8,6 +8,9 @@ u7015074, Tanya Babbar
 u7309356, Sam Eckton
 u7351505, Yifan Luo
 """
+import os
+import sys
+from importlib.metadata import requires
 
 
 def task1():
@@ -390,23 +393,42 @@ def explore_package(a_package):
 
     return loc, custom_types
 
-
-
+counter = 0
 def task5():
-    """
-    Prints all cyclical depndecies for packages in importable_stdlibs returned 
-    by find_cycles using arrows to show dependencies in a numbered output.
+    ListOfStdLibs = []
+    standard_lib_path = os.path.join(sys.prefix, "Lib")
+    for file in os.listdir(standard_lib_path):
+        ListOfStdLibs.append(file.split(".py")[0].strip().lower())
 
-    Returns
-    -------
-    None.
+     # ListOfStdLibs = ["pandas" , "numpy" , "xlrd" , "datetime" , "scipy"]
 
-    """
-    cycles = find_cycles()
-    for i, cycle in enumerate(cycles):
-        print(str(i + 1) + '. ' + ' -> '.join(cycle))
+        CyclicDependencies = []
 
+    def find_cycles2(packageName):
+            (find_cycles())  ##gets all the depenencies
+            global counter
+            counter += 1
 
+            try:
+                dep = find_cycles()[counter]  # getting the dependency
+
+            except Exception as data:
+                print(counter, packageName, end="")
+                print(f"--> {data}", end="")
+                print("\n")
+                return
+
+            if dep == None:
+                pass
+            else:
+                x = len(dep)
+                cycles = find_cycles()
+                for i, cycle in enumerate(cycles):
+                    print(str(i + 1) + '. ' + packageName + ' -> '.join(cycle))
+            return
+
+    for packageUnderScan in ListOfStdLibs:
+            find_cycles2(packageUnderScan)
 
 
 def find_cycles():
