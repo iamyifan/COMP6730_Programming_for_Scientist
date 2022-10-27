@@ -274,7 +274,9 @@ def task4():
     Assumptions:
         Assumes that functions 1 and 2 run as intended returning values for sets stdlibs
         and importable_stdlibs to be used in this task. Assumes that any pakcages
-        without any lines of python code are not python packages. 
+        without any lines of python code are not python packages. Assumes that any 
+        Python coded package will posses either the __path__ or __file__ attribute and 
+        if the package is Non Python coded, explore_package() will return 'None'. 
      """
     
     
@@ -350,8 +352,7 @@ def explore_package(a_package):
     mod = importlib.import_module(a_package)            # import the current stdlib
     lineslen = 0                                        # initalise the lines count to 0
     class_count = 0                                     # initialise the class count to 0
-
-    import asynchat
+    
         
     try:                                                # try case to test for python code module (folder case)
         path = mod.__path__                             # use __path__ module to check for the location of the python folder for the module
@@ -373,7 +374,7 @@ def explore_package(a_package):
             for line in data_test:                      # test for each line in data_test
                 line = line.strip()
                                         
-                # if the line starts or ends with a doctring symbol, assign the tester to true or false depending on what it currently is
+                # if the line starts and ends with docstring assign it to false 
                 if line[:3] == '"""' and line[-3:] == '"""':
                     doc_string=False
                 else:        
@@ -417,9 +418,8 @@ def explore_package(a_package):
             for line in data_test:                      # test for each line in data_test
                 line = line.strip()    
                 
-                # if line[:3] == '"""' and line[-3:] == '"""': 
-                #     continue
-                          
+
+                # if the line starts and ends with docstring assign it to false          
                 if line[:3] == '"""' and line[-3:] == '"""':
                     doc_string=False
                 else:        
@@ -579,31 +579,6 @@ def recursive_help(importable_stdlibs, stdlib, depend,
                                current_cycle + [depend], current_cycles)
             
     return current_cycles
-
-
-# used for testing to find the cycles fro one stdlib
-# def find_acycle(stdlib):
-#     std_cycles = []
-#     import importlib
-#     stdlibs = set(get_stdlib_packages())
-#     importable_stdlibs = set(get_real(stdlibs))
-    
-#     mod = importlib.import_module(stdlib)
-#     resource = set(vars(mod).keys())                  # get resources of the module "name"
-#     dependent_mods = resource & importable_stdlibs    # get dependent package names among "importable_stdlibs"
-#     dependent_mods.discard(stdlib)                    # exclude duplicates (e.g. a function with the same name)
-#     dependent_mods = list(dependent_mods)
-        
-#     for elem in dependent_mods:
-#         current_cycles = []
-#         current_cycle = [stdlib, elem]
-#         current_cycles = recursive_help(importable_stdlibs, stdlib, elem, 
-#                                         current_cycle, current_cycles)
-#         std_cycles += current_cycles
-            
-#     return (std_cycles)
-    
-
 
     
     
