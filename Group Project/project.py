@@ -8,6 +8,38 @@ u7015074, Tanya Babbar
 u7309356, Sam Eckton
 u7351505, Yifan Luo
 """
+import os
+import sys
+from importlib.metadata import requires
+
+
+def task1():
+    """
+    The function calls a function named "get_stdlib_packages" and uses its
+    results (a set of package names in StdLib) to print the Python version,
+    the OS name, and the first five and the last five package names. At the
+    end, all the external package names except "this" and "antigravity" are
+    stored in the variable "stdlibs".
+
+    Parameters:
+        No parameters.
+
+    Returns:
+        No returns.
+
+    Assumptions:
+        The function assumes the program is running on Python3.5+.
+    """
+    import platform
+
+    stdlibs = sorted(list(get_stdlib_packages()))  # get a sorted list of external StdLib
+    os_name = platform.platform()  # get the OS name
+    py_ver = platform.python_version()  # get the Python version
+
+    print("\nPython {py_ver} on {os_name}".format(py_ver=py_ver, os_name=os_name))
+    print("StdLib contains {} external modules and packages:".format(len(stdlibs)))
+    print(", ".join(stdlibs[:5]) + " ... " + ", ".join(stdlibs[-5:]))
+    print("\n")
 
 
 def get_stdlib_packages():
@@ -50,13 +82,15 @@ def get_stdlib_packages():
     return stdlibs
 
 
-def task1():
+
+def task2():
     """
-    The function calls a function named "get_stdlib_packages" and uses its
-    results (a set of package names in StdLib) to print the Python version,
-    the OS name, and the first five and the last five package names. At the
-    end, all the external package names except "this" and "antigravity" are
-    stored in the global variable "stdlibs".
+    The function calls a function named "get_real" and uses its result
+    (a set of importable package names) to print the information
+    (OS and Python version) about the packages which cannot be used
+    on the execution platform. At the end, all the importable external
+    package names in the variable "stdlibs" provided by get_stdlib_packages() 
+    are stored in a variable named "importable_stdlibs".
 
     Parameters:
         No parameters.
@@ -65,17 +99,21 @@ def task1():
         No returns.
 
     Assumptions:
-        The function assumes the program is running on Python3.5+.
+        Task 1 runs without errors and exceptions. The set of stdlibs returned by
+        get_stdlib_packages() is correct and a the variable returned by get_real(stdlibs)
+        contains all importable package names.
     """
     import platform
 
-    stdlibs = sorted(list(get_stdlib_packages()))  # get a sorted list of external StdLib
-    os_name = platform.platform()  # get the OS name
-    py_ver = platform.python_version()  # get the Python version
+    stdlibs = get_stdlib_packages()  # all external StdLib package names from task 1
+    importable_stdlibs = get_real(stdlibs)  # all importable package names from stdlibs
+    unimportable_stdlibs = stdlibs.difference(importable_stdlibs)  # all non-importable package names from stdlibs
+    os_name = platform.platform()  # get OS name
+    py_ver = platform.python_version()  # get Python version
 
-    print("\nPython {py_ver} on {os_name}".format(py_ver=py_ver, os_name=os_name))
-    print("StdLib contains {} external modules and packages:".format(len(stdlibs)))
-    print(", ".join(stdlibs[:5]) + " ... " + ", ".join(stdlibs[-5:]))
+    print(
+        "These StdLib packages on Python-{py_ver}/{os_name} are not importable:".format(py_ver=py_ver, os_name=os_name))
+    print(", ".join(sorted(list(unimportable_stdlibs))))
     print("\n")
 
 
@@ -117,39 +155,49 @@ def get_real(package_names):
     return set(importable_package_names)
 
 
-def task2():
-    """
-    The function calls a function named "get_real" and uses its result
-    (a set of importable package names) to print the information
-    (OS and Python version) about the packages which cannot be used
-    on the execution platform. At the end, all the importable external
-    package names in the global variable "stdlibs" are stored in a
-    global variable named "importable_stdlibs".
 
+
+def task3():
+    """
+    This function calls a helper function named "module_dependency" to decide the
+    dependency of each module and store its dependent modules in the
+    variable "dependent_stdlibs". Then, a function named "core_modules"
+    stores all the package names which are independent of others in
+    "importable_stdlibs". Additionally a functions named "most_dependent_modules"
+    is used to find the most dependent modules according to the results from
+    "module_dependency". Finally, task 3 prints information about the most
+    dependent modules and the number of core modules based on the functions
+    mentioned above.
     Parameters:
         No parameters.
-
     Returns:
         No returns.
-
     Assumptions:
-        Task 1 runs without errors and exceptions. A global variable named
-        "importable_stdlibs" is created to store all the importable external
-        package names in the global variable "stdlibs".
+        Task 1 and task 2 run without errors and exceptions. stdlibs and importable_stdlibs
+        returned by get_stdlib_packages() and get_real(stdlibs) are correct and provide
+        a list of all importable external packages
     """
-    import platform
 
-    stdlibs = get_stdlib_packages()  # all external StdLib package names from task 1
-    importable_stdlibs = get_real(stdlibs)  # all importable package names from stdlibs
-    unimportable_stdlibs = stdlibs.difference(importable_stdlibs)  # all non-importable package names from stdlibs
-    os_name = platform.platform()  # get OS name
-    py_ver = platform.python_version()  # get Python version
+    stdlibs = get_stdlib_packages()
+    importable_stdlibs = get_real(stdlibs)
 
-    print(
-        "These StdLib packages on Python-{py_ver}/{os_name} are not importable:".format(py_ver=py_ver, os_name=os_name))
-    print(", ".join(sorted(list(unimportable_stdlibs))))
-    print("\n")
+    # initialize a dictionary to store dependency information
+    # key: package name, value: number of its dependent modules, initialized with 0
+    stdlibs_dependency = dict.fromkeys(importable_stdlibs, 0)
 
+    # get dependency information of each importable external module
+    for importable_stdlib in importable_stdlibs:
+        dependent_stdlibs = module_dependency(importable_stdlibs, importable_stdlib)
+        stdlibs_dependency[importable_stdlib] = len(dependent_stdlibs)
+
+    # print most dependent package names and the number of their dependent modules
+    print("The following StdLib packages are most dependent:")
+    most_dependent_modules(stdlibs_dependency, n=5, descending=True)  # top "n" modules sorted in descending order
+    # print total number of core packages and core package examples
+    core_stdlibs = sorted(list(core_modules(stdlibs_dependency)))  # sort core modules by names
+    print("The {} core packages are:".format(len(core_stdlibs)))
+    print(", ".join(core_stdlibs[:5]) + " ... " + ", ".join(core_stdlibs[-5:]))
+    print('\n')
 
 def module_dependency(module_names, name):
     """
@@ -225,51 +273,71 @@ def core_modules(stdlibs_dependency):
     return core_stdlibs
 
 
-def task3():
+def task4():
     """
-    The function calls a function named "module_dependency" to decide the
-    dependency of each module and store its dependent modules in the global
-    variable "importable_stdlibs". Then, a function named "core_modules"
-    stores all the package names which are independent with others in
-    "importable_stdlibs". Besides, a functions named "most_dependent_modules"
-    is used to find the most dependent modules according to the results from
-    "module_dependency". Finally, task 3 shows information about the most
-    dependent modules and the number of core modules based on the functions
-    above.
+    The function calls the function explore package() using the previously found 
+    set of importabel_stdlibs and creates a dictionary, linking each module 
+    with the numbers of lines of code it contains, and the number of class 
+    instances. It then returns the five largest and smallest modules in terms 
+    of lines of code and class instances.
     Parameters:
         No parameters.
     Returns:
         No returns.
     Assumptions:
-        Task 1 and task 2 run without errors and exceptions. Global variables
-        "stdlibs" and "importable_stdlibs" are created to store all the package
-        names of external modules and all the package names of importable external
-        modules.
-    """
-
+        Assumes that tasks 1 and 2 run as intended returning values for stdlibs
+        and all importable_stdlibs to be used in this task. Assumes that any packages
+        without any lines of python code are not python packages. Assumes that any 
+        Python coded package will posses either the __path__ or __file__ attribute and 
+        if the package is Non Python coded, explore_package() will return '-1,-1'. 
+     """
     stdlibs = get_stdlib_packages()
     importable_stdlibs = get_real(stdlibs)
 
-    # initialize a dictionary to store dependency information
-    # key: package name, value: number of its dependent modules, initialized with 0
-    stdlibs_dependency = dict.fromkeys(importable_stdlibs, 0)
+    loc_and_custom_types = {}
 
-    # get dependency information of each importable external module
     for importable_stdlib in importable_stdlibs:
-        dependent_stdlibs = module_dependency(importable_stdlibs, importable_stdlib)
-        stdlibs_dependency[importable_stdlib] = len(dependent_stdlibs)
+        loc, custom_types = explore_package(importable_stdlib)
+        if loc == custom_types == -1:  # only count python code, other types return -1, -1
+            continue
+        loc_and_custom_types[importable_stdlib] = (loc, custom_types)
 
-    # print most dependent package names and the number of their dependent modules
-    print("The following StdLib packages are most dependent:")
-    most_dependent_modules(stdlibs_dependency, n=5, descending=True)  # top "n" modules sorted in descending order
-    # print total number of core packages and core package examples
-    core_stdlibs = sorted(list(core_modules(stdlibs_dependency)))  # sort core modules by names
-    print("The {} core packages are:".format(len(core_stdlibs)))
-    print(", ".join(core_stdlibs[:5]) + " ... " + ", ".join(core_stdlibs[-5:]))
-    print('\n')
+    loc_rank = sorted(list(loc_and_custom_types.items()), key=lambda x: x[1][0], reverse=True)
+    classes_rank = sorted(list(loc_and_custom_types.items()), key=lambda x: x[1][1], reverse=True)
+
+    print("The following StdLib packages are the largest in terms of LOC:")
+    print(', '.join(map(lambda x: str(x[0]) + ': ' + str(x[1][0]), loc_rank[:5])))
+    print("\nThe following StdLib packages are the smallest in terms of LOC:")
+    print(', '.join(map(lambda x: str(x[0]) + ': ' + str(x[1][0]), loc_rank[-5:])))
+    print("\nThe following StdLib packages are the largest in terms of the number of classes defined:")
+    print(', '.join(map(lambda x: str(x[0]) + ': ' + str(x[1][1]), classes_rank[:5])))
+    print("\nThe following StdLib packages define no custom classes:")
+    print(', '.join(map(str, sorted([cr[0] for cr in classes_rank if cr[1][1] == 0]))))
+    print('\n\n')
+
 
 
 def explore_package(a_package):
+    """
+    Helper function for task 4, explores the individual code associated with each 
+    module from the importable_stdlibs set. The function test to see if the module 
+    is a folder of an indiviudal python file, otherwise returns values of '-1,-1'. If 
+    it is a folder, for every python file within the folder (summation), the 
+    lines of code and number of class instances are counted and returned as a tuple. 
+    The same is returned for an individual python file. 
+    
+    Parameters:
+        No parameters.
+        
+    Returns:
+        A tuple value representing the total number of lines of code and the total
+        class instances within the given python package
+        
+    Assumptions:
+        Assumes all importable python files to be tested can be found within
+        the computers files using its own __file__ attribute. Assumes that lines of code 
+        includes both docstrings and comments.
+    """
     import os
     import importlib
     import sys
@@ -325,34 +393,64 @@ def explore_package(a_package):
 
     return loc, custom_types
 
+counter = 0
+def task5():
+    ListOfStdLibs = []
+    standard_lib_path = os.path.join(sys.prefix, "Lib")
+    for file in os.listdir(standard_lib_path):
+        ListOfStdLibs.append(file.split(".py")[0].strip().lower())
 
-def task4():
-    stdlibs = get_stdlib_packages()
-    importable_stdlibs = get_real(stdlibs)
+     # ListOfStdLibs = ["pandas" , "numpy" , "xlrd" , "datetime" , "scipy"]
 
-    loc_and_custom_types = {}
+        CyclicDependencies = []
 
-    for importable_stdlib in importable_stdlibs:
-        loc, custom_types = explore_package(importable_stdlib)
-        if loc == custom_types == -1:  # only count python code, other types return -1, -1
-            continue
-        loc_and_custom_types[importable_stdlib] = (loc, custom_types)
+    def find_cycles2(packageName):
+            (find_cycles())  ##gets all the depenencies
+            global counter
+            counter += 1
 
-    loc_rank = sorted(list(loc_and_custom_types.items()), key=lambda x: x[1][0], reverse=True)
-    classes_rank = sorted(list(loc_and_custom_types.items()), key=lambda x: x[1][1], reverse=True)
+            try:
+                dep = find_cycles()[counter]  # getting the dependency
 
-    print("The following StdLib packages are the largest in terms of LOC:")
-    print(', '.join(map(lambda x: str(x[0]) + ': ' + str(x[1][0]), loc_rank[:5])))
-    print("\nThe following StdLib packages are the smallest in terms of LOC:")
-    print(', '.join(map(lambda x: str(x[0]) + ': ' + str(x[1][0]), loc_rank[-5:])))
-    print("\nThe following StdLib packages are the largest in terms of the number of classes defined:")
-    print(', '.join(map(lambda x: str(x[0]) + ': ' + str(x[1][1]), classes_rank[:5])))
-    print("\nThe following StdLib packages define no custom classes:")
-    print(', '.join(map(str, sorted([cr[0] for cr in classes_rank if cr[1][1] == 0]))))
-    print('\n\n')
+            except Exception as data:
+                print(counter, packageName, end="")
+                print(f"--> {data}", end="")
+                print("\n")
+                return
+
+            if dep == None:
+                pass
+            else:
+                x = len(dep)
+                cycles = find_cycles()
+                for i, cycle in enumerate(cycles):
+                    print(str(i + 1) + '. ' + packageName + ' -> '.join(cycle))
+            return
+
+    for packageUnderScan in ListOfStdLibs:
+            find_cycles2(packageUnderScan)
 
 
 def find_cycles():
+    """
+    A function called by task 5 to find all cyclical depdencies for packages 
+    in importable_stdlibs using recurive_helper().
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    cycles : list of lists
+        the list of all cyclical dependencies in importable_stdlibs.
+
+    Assumptions:
+        Assumes all importable python files to be tested can be found within
+        the computers files using its own __file__ attribute. Assumes that lines of code 
+        includes both docstrings and comments. Assumes that get_stdlib_packages() and 
+        get_real() return the correct values, providing a set of all importable packages. 
+
+    """
     stdlibs = get_stdlib_packages()
     importable_stdlibs = get_real(stdlibs)
     pkg_dependency = dict.fromkeys(importable_stdlibs, 0)
@@ -365,6 +463,23 @@ def find_cycles():
     max_len = len(pkg_dependency)
 
     def recursive_helper(pkg, cycle):
+        """
+        recursive function used to find all cyclical depdencies 
+        for a given stdlib by calling itself and itterating over the dependicies 
+        of the current stdlib.
+
+        Parameters
+        ----------
+        pkg : package
+            A depdent package of the current package being explored.
+        cycle : list
+            the current cycle of the package being explore and its current depdendency.
+
+        Returns
+        -------
+        None.
+
+        """
         nonlocal cycles, pkg_dependency, max_len
         if len(cycle) >= max_len:
             return
@@ -383,10 +498,6 @@ def find_cycles():
     return cycles
 
 
-def task5():
-    cycles = find_cycles()
-    for i, cycle in enumerate(cycles):
-        print(str(i + 1) + '. ' + ' -> '.join(cycle))
 
 
 def task6():
