@@ -360,7 +360,7 @@ def explore_package(a_package):
             return None
         
         for file in set(py_files):                      # open each python file in the modules folder
-            data = open(file,"r", encoding="utf8")
+            data = open(file,"r", encoding='ISO-8859-1')
 
             data_test = [line for line in data]         # create a list for each line in the file
             data.seek(0)                                # return to the start of the file
@@ -373,11 +373,15 @@ def explore_package(a_package):
                 line = line.strip()
                                         
                 # if the line starts or ends with a doctring symbol, assign the tester to true or false depending on what it currently is
-                if line[:3] == '"""' or line[-3:] == '"""':                      
-                    if not doc_string:
-                        doc_string = True
-                    else:
-                        doc_string = False
+                if line[:3] == '"""' and line[-3:] == '"""':
+                    doc_string=False
+                else:        
+                    # if the line starts or ends with a docstring symbol, assign the tester to true or false depending on what it currently is
+                    if line[:3] == '"""' or line[-3:] == '"""' or line [:4] == 'r"""':                            
+                        if not doc_string:
+                            doc_string = True
+                        else:
+                            doc_string = False
                 
                 words = line.split()            # split each line into a list of words/elements
 
@@ -394,45 +398,53 @@ def explore_package(a_package):
     except:                                     # if the current module is not a python folder try the file case:
         
         
-        try:                                    # try statement to check if the current module is python coded (single file case)
+        try:
+            #print('here')                                    # try statement to check if the current module is python coded (single file case)
             file = mod.__file__                 # use the __file__ method to check for the location of the python file
         
-            if file[-3:] == '.py':              # check the file is python coded
-                data = open(file,"r", encoding="utf8")      # open the current file
-                data_test = [line for line in data]         # create the data_test as a list of each line
-                data.seek(0)                                # return to the start of the file
+                         # check the file is python coded
+            data = open(file,"r", encoding='ISO-8859-1')      # open the current file
+            data_test = [line for line in data]         # create the data_test as a list of each line
+            data.seek(0)                                # return to the start of the file
                 
                 
                 
-                lineslen =  len(data.readlines())           # count the number of lines in the python file
+            lineslen =  len(data.readlines())           # count the number of lines in the python file
 
-                doc_string = False                          # assign the docString tester to flase
+            doc_string = False                          # assign the docString tester to flase
                
-                for line in data_test:                      # test for each line in data_test
-                    line = line.strip()     
-                                        
+            for line in data_test:                      # test for each line in data_test
+                line = line.strip()    
+                
+                # if line[:3] == '"""' and line[-3:] == '"""': 
+                #     continue
+                          
+                if line[:3] == '"""' and line[-3:] == '"""':
+                    doc_string=False
+                else:        
                     # if the line starts or ends with a docstring symbol, assign the tester to true or false depending on what it currently is
-                    if line[:3] == '"""' or line[-3:] == '"""':                            
+                    if line[:3] == '"""' or line[-3:] == '"""' or line [:4] == 'r"""':                            
                         if not doc_string:
                             doc_string = True
                         else:
                             doc_string = False
+                        
                 
-                    words = line.split()        # split each line into a list of each word/element 
+                
+                words = line.split()        # split each line into a list of each word/element 
 
                     # check if the element is a class instances base on several conditions
-                    if len(words) > 0 and words[0] == 'class' and not doc_string:
+                if len(words) > 0 and words[0] == 'class' and not doc_string:
                          #print(line)
-                         class_count += 1
+                    class_count += 1
                     
-                data.close()
+            data.close()
         
     
-                return (lineslen,class_count)
+            return (lineslen,class_count)
             
         # excpetions if the code fails, i.e. the modul/file is not python coded - return None
-            else:
-                return None
+           
    
         except: 
             return None
@@ -548,7 +560,7 @@ def recursive_help(importable_stdlibs, stdlib, depend,
     dependent_mods = list(dependent_mods)
     
     # to stop recursion depth errors
-    if len(current_cycle) > 20:
+    if len(current_cycle) > 100:
         return;
     
     # itterate over every dependent module for the current stdlib - depend
@@ -595,11 +607,11 @@ def recursive_help(importable_stdlibs, stdlib, depend,
     
     
 def analyse_stdlib():
-    task1()
-    task2()
-    task3()
+    #task1()
+    #task2()
+    #task3()
     task4()
-    task5()
+    #task5()
 
 
 # The section below will be executed when you run this file.
