@@ -385,7 +385,8 @@ def find_cycles():
         if len(cycle) >= max_len:
             return
         if len(cycle) > 1 and cycle[0] == cycle[-1]:
-            cycles.append(cycle)
+            if cycle not in cycles:
+                cycles.append(cycle)
             return
         if len(cycle) > len(set(cycle)):
             return
@@ -400,21 +401,36 @@ def find_cycles():
 
 def task5():
     cycles = find_cycles()
-    for cycle in cycles:
-        print(' -> '.join(cycle))
+    for i, cycle in enumerate(cycles):
+        print(str(i + 1) + '. ' + ' -> '.join(cycle))
 
 
 def task6():
-    pass
+    import networkx as nx
+    import matplotlib.pyplot as plt
+
+    cycles = find_cycles()
+
+    G = nx.Graph()
+    G.add_nodes_from([cycle[0] for cycle in cycles])
+
+    for cycle in cycles:
+        G.add_edges_from([(cycle[i], cycle[i + 1]) for i in range(len(cycle) - 1)])
+
+    plt.figure()
+    nx.draw(G, with_labels=True)
+    plt.savefig("task6_path.png")
+    plt.show()
+
 
 
 def analyse_stdlib():
-    # task1()
-    # task2()
-    # task3()
-    # task4()
+    task1()
+    task2()
+    task3()
+    task4()
     task5()
-    task6()
+    # task6()
 
 
 # The section below will be executed when you run this file.
@@ -425,6 +441,4 @@ if __name__ == '__main__':
     NAME = 'Yifan Luo'
     ID = 'u7351505'
     print(f'My name is {NAME}, my id is {ID}, and these are my findings for Project COMP6730.2022.S2')
-    # stdlibs = set()  # a global variable containing external package names
-    # importable_stdlibs = set()  # a global variable containing importable package names in stdlibs
     analyse_stdlib()

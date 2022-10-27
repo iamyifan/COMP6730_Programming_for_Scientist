@@ -350,7 +350,8 @@ def explore_package(a_package):
     mod = importlib.import_module(a_package)            # import the current stdlib
     lineslen = 0                                        # initalise the lines count to 0
     class_count = 0                                     # initialise the class count to 0
-    
+
+    import asynchat
         
     try:                                                # try case to test for python code module (folder case)
         path = mod.__path__                             # use __path__ module to check for the location of the python folder for the module
