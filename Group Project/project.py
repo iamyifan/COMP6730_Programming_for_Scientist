@@ -36,7 +36,6 @@ def get_stdlib_packages():
     assert minor >= 5, "Python3.5+ is used in this project."
 
     # get StdLib for each Python version
-    global stdlibs
     if 5 <= minor <= 9:
         stdlibs = set(eval("isort.stdlibs.py3" + str(minor) + ".stdlib"))
     elif minor >= 10:
@@ -350,6 +349,7 @@ def task4():
     print(', '.join(map(lambda x: str(x[0]) + ': ' + str(x[1][1]), classes_rank[:5])))
     print("\nThe following StdLib packages define no custom classes:")
     print(', '.join(map(str, sorted([cr[0] for cr in classes_rank if cr[1][1] == 0]))))
+    print('\n\n')
 
 
 def find_cycles():
@@ -407,13 +407,12 @@ def task6():
     plt.show()
 
 
-
 def analyse_stdlib():
-    # task1()
-    # task2()
-    # task3()
+    task1()
+    task2()
+    task3()
     task4()
-    # task5()
+    task5()
     # task6()
 
 
